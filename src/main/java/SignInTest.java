@@ -9,6 +9,8 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.FluentWait;
+import org.openqa.selenium.support.ui.Wait;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
@@ -64,6 +66,9 @@ public class SignInTest {
     private WebElement sendLinkMessage;
     @FindBy(xpath = "//*[contains(@id,\"mat-dialog-\")]/app-auth-modal//app-restore-password/div/form/div/div")
     private WebElement errorSubmitLink;
+
+    @FindBy(css = "div.alert-general-error.ng-star-inserted")
+    private WebElement errorSubmit;
     @FindBy(xpath = "//*[contains(@id,\"mat-dialog-\")]/app-auth-modal//app-restore-password/div/div/p")
     private WebElement backToSignInText;
     @FindBy(xpath = "//*[contains(@id,\"mat-dialog-\")]/app-auth-modal//app-restore-password/div/div/p/a")
@@ -85,6 +90,7 @@ public class SignInTest {
 
     private static WebDriver driver;
     private static WebDriverWait webDriverWait;
+    private static Wait<WebDriver> wait;
 
     @BeforeAll
     public static void setUp() {
@@ -100,12 +106,15 @@ public class SignInTest {
         PageFactory.initElements(driver, this);
         driver.manage().deleteAllCookies();
         webDriverWait = new WebDriverWait(driver, Duration.ofMillis(5000L));
+        wait = new FluentWait<>(driver).withTimeout(Duration.ofSeconds(10)).pollingEvery(Duration.ofMillis(500));
         // ToDo delete token
     }
 
     private void clickSignInButton() {
         webDriverWait.until(ExpectedConditions.elementToBeClickable(signInButton));
         signInButton.click();
+        wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.cssSelector("div.wrapper")));
+
     }
 
     @Test
@@ -118,8 +127,6 @@ public class SignInTest {
     public void signInTest(String email, String password, String userName) {
         clickSignInButton();
 
-        webDriverWait.until(ExpectedConditions.textToBePresentInElement(welcomeText, "Welcome back!"));
-
         MatcherAssert.assertThat(welcomeText.getText(), CoreMatchers.is("Welcome back!"));
         MatcherAssert.assertThat(signInDetailsText.getText(), CoreMatchers.is("Please enter your details to sign in."));
         MatcherAssert.assertThat(emailLabel.getText(), CoreMatchers.is("Email"));
@@ -129,7 +136,6 @@ public class SignInTest {
         MatcherAssert.assertThat(passwordInput.getAttribute("value"), CoreMatchers.is(password));
         signInSubmitButton.click();
 
-//        driver.manage().timeouts().implicitlyWait(Duration.ofMillis(2000L));
         webDriverWait.until(ExpectedConditions.elementToBeClickable(headerUser));
         MatcherAssert.assertThat(headerUser.getText(), CoreMatchers.is(userName));
         headerUserButton.click();
@@ -148,6 +154,7 @@ public class SignInTest {
         clickSignInButton();
         emailInput.sendKeys(email);
         passwordInput.sendKeys("uT346^^^erw");
+        webDriverWait.until(ExpectedConditions.visibilityOf(errorEmail));
         MatcherAssert.assertThat(errorEmail.getText(), CoreMatchers.is("Please check if the email is written correctly"));
         closeButton.click();
 
@@ -170,17 +177,16 @@ public class SignInTest {
 
     @ParameterizedTest
     @CsvSource({
-            "testerforapp2023@gmail.com, 12345678, Bad email or password",
-            "testerforaApp2023@gmail.com, nehmys-hipbic-5jadcU, Bad email or password"
+            "testerforapp2023@gmail.com, 12345678",
+            "testerforaApp2023@gmail.com, nehmys-hipbic-5jadcU"
     })
-    public void signInIncorrectData(String email, String password, String message) throws InterruptedException {
+    public void signInIncorrectData(String email, String password) {
         clickSignInButton();
         emailInput.sendKeys(email);
         passwordInput.sendKeys(password);
         signInSubmitButton.click();
-        driver.manage().timeouts().implicitlyWait(Duration.ofMillis(5000L));
-        WebElement errorSubmit = driver.findElement(By.xpath("//*[contains(@id,\"mat-dialog-\")]/app-auth-modal//app-sign-in/form/div[@class=\"alert-general-error ng-star-inserted\"]"));
-        MatcherAssert.assertThat(errorSubmit.getText(), CoreMatchers.is(message));
+        webDriverWait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("div.alert-general-error.ng-star-inserted")));
+        MatcherAssert.assertThat(errorSubmit.getText(), CoreMatchers.is("Bad email or password"));
         closeButton.click();
     }
 
@@ -191,7 +197,9 @@ public class SignInTest {
         MatcherAssert.assertThat(troubleText.getText(), CoreMatchers.is("Trouble singing in?"));
         MatcherAssert.assertThat(troubleDetailsText.getText(), CoreMatchers.is("Enter your email address and we'll send you a link to regain access to your account."));
         MatcherAssert.assertThat(backToSignInText.getText(), CoreMatchers.is("Remember your password? Back to Sign in"));
+        // wait
         backToSignInButton.click();
+        //wait
         closeButton.click();
     }
 
@@ -226,8 +234,8 @@ public class SignInTest {
     @MethodSource(value = "emailProvider")
     public void forgotPasswordLinkAlreadySentTest(String email) {
         fillForgotPasswordForm(email);
-        webDriverWait.until(ExpectedConditions.textToBePresentInElement(errorSubmitLink,
-                "Password restore link already sent, please check your email: " + email));
+        webDriverWait.until(ExpectedConditions.visibilityOf(errorSubmitLink));
+        MatcherAssert.assertThat(errorSubmitLink.getText(), CoreMatchers.is("Password restore link already sent, please check your email: " + email));
         webDriverWait.until(ExpectedConditions.elementToBeClickable(closeButton));
         closeButton.click();
     }
@@ -237,16 +245,13 @@ public class SignInTest {
         clickSignInButton();
         MatcherAssert.assertThat(redirectSignUpText.getText(), CoreMatchers.is("Don't have an account yet? Sign up"));
         redirectSignUpButton.click();
-        try {
-            webDriverWait.until(ExpectedConditions.textToBePresentInElementValue(helloText, "Hello!"));
-            MatcherAssert.assertThat(helloText.getText(), CoreMatchers.is("Hello!"));
-            MatcherAssert.assertThat(signUpDetailsText.getText(), CoreMatchers.is("Please enter your details to sign up."));
+        webDriverWait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("h1.title-text")));
+        MatcherAssert.assertThat(helloText.getText(), CoreMatchers.is("Hello!"));
+        MatcherAssert.assertThat(signUpDetailsText.getText(), CoreMatchers.is("Please enter your details to sign up."));
+        closeButton.click();
 
-        } catch (TimeoutException e){
-            closeButton.click();
-            throw new TimeoutException(e);
-        }
     }
+
 //    @Test
 //    public void sighInGoogle() {
 //        clickSignInButton();
