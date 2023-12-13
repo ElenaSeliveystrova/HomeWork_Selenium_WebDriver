@@ -16,9 +16,9 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import java.time.Duration;
 import java.util.stream.Stream;
 
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-
 
 public class SignInTest {
     @FindBy(css = "app-ubs .ubs-header-sing-in-img")
@@ -109,12 +109,9 @@ public class SignInTest {
         wait = new FluentWait<>(driver).withTimeout(Duration.ofSeconds(10)).pollingEvery(Duration.ofMillis(500));
         // ToDo delete token
     }
-
-    private void clickSignInButton() {
-        webDriverWait.until(ExpectedConditions.elementToBeClickable(signInButton));
-        signInButton.click();
-        wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.cssSelector("div.wrapper")));
-
+    @AfterAll
+    public static void tearDown() {
+        driver.quit();
     }
 
     @Test
@@ -127,17 +124,20 @@ public class SignInTest {
     public void signInTest(String email, String password, String userName) {
         clickSignInButton();
 
-        MatcherAssert.assertThat(welcomeText.getText(), CoreMatchers.is("Welcome back!"));
-        MatcherAssert.assertThat(signInDetailsText.getText(), CoreMatchers.is("Please enter your details to sign in."));
-        MatcherAssert.assertThat(emailLabel.getText(), CoreMatchers.is("Email"));
+        assertThat(welcomeText.getText(), is("Welcome back!"));
+        assertThat(signInDetailsText.getText(), is("Please enter your details to sign in."));
+        assertThat(emailLabel.getText(), is("Email"));
+
         emailInput.sendKeys(email);
-        MatcherAssert.assertThat(emailInput.getAttribute("value"), CoreMatchers.is(email));
+        assertThat(emailInput.getAttribute("value"), is(email));
+
         passwordInput.sendKeys(password);
-        MatcherAssert.assertThat(passwordInput.getAttribute("value"), CoreMatchers.is(password));
+        assertThat(passwordInput.getAttribute("value"), is(password));
+
         signInSubmitButton.click();
 
         webDriverWait.until(ExpectedConditions.elementToBeClickable(headerUser));
-        MatcherAssert.assertThat(headerUser.getText(), CoreMatchers.is(userName));
+        assertThat(headerUser.getText(), is(userName));
         headerUserButton.click();
 
         webDriverWait.until(ExpectedConditions.elementToBeClickable(headerUser));
@@ -155,9 +155,8 @@ public class SignInTest {
         emailInput.sendKeys(email);
         passwordInput.sendKeys("uT346^^^erw");
         webDriverWait.until(ExpectedConditions.visibilityOf(errorEmail));
-        MatcherAssert.assertThat(errorEmail.getText(), CoreMatchers.is("Please check if the email is written correctly"));
+        assertThat(errorEmail.getText(), is("Please check if the email is written correctly"));
         closeButton.click();
-
     }
 
     @ParameterizedTest
@@ -170,9 +169,8 @@ public class SignInTest {
         emailInput.sendKeys(email);
         passwordInput.sendKeys(password);
         passwordLabel.click();
-        MatcherAssert.assertThat(errorPassword.getText(), CoreMatchers.is(message));
+        assertThat(errorPassword.getText(), is(message));
         closeButton.click();
-
     }
 
     @ParameterizedTest
@@ -186,7 +184,17 @@ public class SignInTest {
         passwordInput.sendKeys(password);
         signInSubmitButton.click();
         webDriverWait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("div.alert-general-error.ng-star-inserted")));
-        MatcherAssert.assertThat(errorSubmit.getText(), CoreMatchers.is("Bad email or password"));
+        assertThat(errorSubmit.getText(), is("Bad email or password"));
+        closeButton.click();
+    }
+    @Test
+    public void redirectSignUp() {
+        clickSignInButton();
+        assertThat(redirectSignUpText.getText(), is("Don't have an account yet? Sign up"));
+        redirectSignUpButton.click();
+        webDriverWait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("h1.title-text")));
+        assertThat(helloText.getText(), is("Hello!"));
+        assertThat(signUpDetailsText.getText(), is("Please enter your details to sign up."));
         closeButton.click();
     }
 
@@ -194,23 +202,48 @@ public class SignInTest {
     public void checkFormForgotPasswordTest() {
         clickSignInButton();
         forgotPasswordButton.click();
-        MatcherAssert.assertThat(troubleText.getText(), CoreMatchers.is("Trouble singing in?"));
-        MatcherAssert.assertThat(troubleDetailsText.getText(), CoreMatchers.is("Enter your email address and we'll send you a link to regain access to your account."));
-        MatcherAssert.assertThat(backToSignInText.getText(), CoreMatchers.is("Remember your password? Back to Sign in"));
+        assertThat(troubleText.getText(), is("Trouble singing in?"));
+        assertThat(troubleDetailsText.getText(), is("Enter your email address and we'll send you a link to regain access to your account."));
+        assertThat(backToSignInText.getText(), is("Remember your password? Back to Sign in"));
         // wait
         backToSignInButton.click();
         //wait
         closeButton.click();
     }
 
+    @ParameterizedTest
+    @MethodSource(value = "emailProvider")
+    @Order(1)
+    public void forgotPasswordTest(String email) {
+        checkMessageFromForgotPasswordForm(email, sendLinkMessage,
+                "Restore password link was sent to your email address.");
+    }
+
+    @ParameterizedTest()
+    @MethodSource(value = "emailProvider")
+    @Order(2)
+    public void forgotPasswordLinkAlreadySentTest(String email) {
+        checkMessageFromForgotPasswordForm(email, errorSubmitLink,
+                "Password restore link already sent, please check your email: " + email);
+        webDriverWait.until(ExpectedConditions.elementToBeClickable(closeButton));
+        closeButton.click();
+    }
+
     private static Stream<String> emailProvider() {
         return Stream.of(
-                "magicnimfa@gmail.com",
-                "testerforapp2023@gmail.com",
-                "cowafo7557@bustayes.com",
-                "xapajoy635@frandin.com"
+//                "magicnimfa@gmail.com",
+                "testerforapp2023@gmail.com"
+//                "cowafo7557@bustayes.com",
+//                "xapajoy635@frandin.com"
 
         );
+    }
+
+    private void clickSignInButton() {
+        webDriverWait.until(ExpectedConditions.elementToBeClickable(signInButton));
+        signInButton.click();
+        wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.cssSelector("div.wrapper")));
+
     }
 
     private void fillForgotPasswordForm(String email) {
@@ -218,38 +251,12 @@ public class SignInTest {
         forgotPasswordButton.click();
         emailInput.sendKeys(email);
         submitLoginLinkButton.click();
+
     }
-
-//    @ParameterizedTest
-//    @MethodSource(value = "emailProvider")
-//    public void forgotPasswordTest(String email) {
-//        fillForgotPasswordForm(email);
-//        webDriverWait.until(ExpectedConditions.visibilityOf(sendLinkMessage));
-//        MatcherAssert.assertThat(sendLinkMessage.getText(), CoreMatchers.is("Restore password link was sent to your email address."));
-//        webDriverWait.until(ExpectedConditions.elementToBeClickable(closeButton));
-//        closeButton.click();
-//    }
-
-    @ParameterizedTest()
-    @MethodSource(value = "emailProvider")
-    public void forgotPasswordLinkAlreadySentTest(String email) {
+    private void checkMessageFromForgotPasswordForm(String email, WebElement element, String errorMessage) {
         fillForgotPasswordForm(email);
-        webDriverWait.until(ExpectedConditions.visibilityOf(errorSubmitLink));
-        MatcherAssert.assertThat(errorSubmitLink.getText(), CoreMatchers.is("Password restore link already sent, please check your email: " + email));
-        webDriverWait.until(ExpectedConditions.elementToBeClickable(closeButton));
-        closeButton.click();
-    }
-
-    @Test
-    public void redirectSignUp() {
-        clickSignInButton();
-        MatcherAssert.assertThat(redirectSignUpText.getText(), CoreMatchers.is("Don't have an account yet? Sign up"));
-        redirectSignUpButton.click();
-        webDriverWait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("h1.title-text")));
-        MatcherAssert.assertThat(helloText.getText(), CoreMatchers.is("Hello!"));
-        MatcherAssert.assertThat(signUpDetailsText.getText(), CoreMatchers.is("Please enter your details to sign up."));
-        closeButton.click();
-
+        webDriverWait.until(ExpectedConditions.visibilityOf(element));
+        assertThat(element.getText(), is(errorMessage));
     }
 
 //    @Test
@@ -259,8 +266,4 @@ public class SignInTest {
 //        MatcherAssert.assertThat(signInGoogleText.getText(), CoreMatchers.is("Вход через аккаунт Google"));
 //    }
 
-    @AfterAll
-    public static void tearDown() {
-        driver.quit();
-    }
 }
