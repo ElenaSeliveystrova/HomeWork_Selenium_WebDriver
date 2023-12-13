@@ -1,6 +1,4 @@
 import io.github.bonigarcia.wdm.WebDriverManager;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.*;
@@ -16,7 +14,6 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import java.time.Duration;
 import java.util.stream.Stream;
 
-import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -37,8 +34,6 @@ public class SignInTest {
     private WebElement signInSubmitButton;
     @FindBy(xpath = "//*[@id=\"header_user-wrp\"]/ul/li[@aria-label=\"sign-out\"] [@class=\"drop-down-item\"]")
     private WebElement signOutButton;
-    @FindBy(css = ".mat-simple-snackbar > span")
-    private WebElement result;
     @FindBy(css = ".alert-general-error")
     private WebElement errorMessage;
     @FindBy(xpath = "//*[@id=\"pass-err-msg\"]/app-error/div")
@@ -49,7 +44,6 @@ public class SignInTest {
     private WebElement headerUser;
     @FindBy(xpath = "//app-main//app-ubs/app-header/header//ul[@id=\"header_user-wrp\"]")
     private WebElement headerUserButton;
-    //    @FindBy(xpath = "//*[contains(@id,\"mat-dialog-\")]/app-auth-modal//div[@class=\"right-side\"]/a")
     @FindBy(css = "a.close-modal-window")
     private WebElement closeButton;
     @FindBy(xpath = "//app-auth-modal/div/div/div[2]/div/app-sign-in/form/label[2]")
@@ -75,8 +69,9 @@ public class SignInTest {
     private WebElement backToSignInButton;
     @FindBy(xpath = "//*[contains(@id,\"mat-dialog-\")]/app-auth-modal//app-sign-in/div[@class=\"missing-account\"]/p")
     private WebElement redirectSignUpText;
-    @FindBy(xpath = "//*[contains(@id,\"mat-dialog-\")]/app-auth-modal//app-sign-in/div[@class=\"missing-account\"]/p/a")
-    private WebElement redirectSignUpButton;
+
+//    @FindBy(xpath = "//*[contains(@id,\"mat-dialog-\")]/app-auth-modal//app-sign-in/div[@class=\"missing-account\"]/p/a")
+//    private WebElement redirectSignUpButton;
     @FindBy(css = "h1.title-text")
     private WebElement helloText;
     @FindBy(xpath = "//*/app-auth-modal//app-sign-up/h2")
@@ -191,7 +186,9 @@ public class SignInTest {
     public void redirectSignUp() {
         clickSignInButton();
         assertThat(redirectSignUpText.getText(), is("Don't have an account yet? Sign up"));
-        redirectSignUpButton.click();
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+        js.executeScript("document.querySelector('a.ubs-link').click()");
+//        redirectSignUpButton.click();
         webDriverWait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("h1.title-text")));
         assertThat(helloText.getText(), is("Hello!"));
         assertThat(signUpDetailsText.getText(), is("Please enter your details to sign up."));
@@ -232,9 +229,9 @@ public class SignInTest {
     private static Stream<String> emailProvider() {
         return Stream.of(
 //                "magicnimfa@gmail.com",
-                "testerforapp2023@gmail.com"
-//                "cowafo7557@bustayes.com",
-//                "xapajoy635@frandin.com"
+//                "testerforapp2023@gmail.com"
+                "cowafo7557@bustayes.com",
+                "xapajoy635@frandin.com"
 
         );
     }
@@ -243,7 +240,6 @@ public class SignInTest {
         webDriverWait.until(ExpectedConditions.elementToBeClickable(signInButton));
         signInButton.click();
         wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.cssSelector("div.wrapper")));
-
     }
 
     private void fillForgotPasswordForm(String email) {
@@ -251,7 +247,6 @@ public class SignInTest {
         forgotPasswordButton.click();
         emailInput.sendKeys(email);
         submitLoginLinkButton.click();
-
     }
     private void checkMessageFromForgotPasswordForm(String email, WebElement element, String errorMessage) {
         fillForgotPasswordForm(email);
