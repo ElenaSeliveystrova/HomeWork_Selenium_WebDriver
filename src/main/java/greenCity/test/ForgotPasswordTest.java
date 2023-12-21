@@ -20,8 +20,6 @@ public class ForgotPasswordTest extends TestRunner {
         assertThat(forgotPasswordElements.getBackToSignInText().getText(), is("Remember your password? Back to Sign in"));
         // wait
         forgotPasswordElements.getBackToSignInButton().click();
-        //wait
-        forgotPasswordElements.getCloseButton().click();
     }
 
     @ParameterizedTest
@@ -39,15 +37,14 @@ public class ForgotPasswordTest extends TestRunner {
         guestFunctions.checkMessageFromForgotPasswordForm(email, forgotPasswordElements.getErrorSubmitLink(),
                 "Password restore link already sent, please check your email: " + email);
         webDriverWait.until(ExpectedConditions.elementToBeClickable(forgotPasswordElements.getCloseButton()));
-        forgotPasswordElements.getCloseButton().click();
     }
 
     private static Stream<String> emailProvider() {
         return Stream.of(
 //                "magicnimfa@gmail.com",
-//                "testerforapp2023@gmail.com"
+                "testerforapp2023@gmail.com"
 //                "cowafo7557@bustayes.com",
-                "xapajoy635@frandin.com"
+//                "xapajoy635@frandin.com"
 
         );
     }

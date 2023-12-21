@@ -24,6 +24,16 @@ public class ForgotPasswordElements {
     private WebElement backToSignInText;
     @FindBy(css = "a.close-modal-window")
     private WebElement closeButton;
+
+    @FindBy(id = "email")
+    private WebElement emailInput;
+    @FindBy(id = "password")
+    private WebElement passwordInput;
+    @FindBy(css = ".alert-general-error")
+    private WebElement errorMessage;
+    @FindBy(xpath = "//*[contains(@id,\"mat-dialog\")]//form/button")
+    private WebElement submitLoginLinkButton;
+
     public ForgotPasswordElements(WebDriver driver) {
         PageFactory.initElements(driver, this);
     }

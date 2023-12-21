@@ -5,26 +5,26 @@ import greenCity.locators.ForgotPasswordElements;
 import greenCity.locators.SignInElements;
 import greenCity.tools.LocalStorageJS;
 import io.github.bonigarcia.wdm.WebDriverManager;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
+import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.openqa.selenium.Dimension;
-import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.PageFactory;
-import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.Wait;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-
+@Slf4j
+@ExtendWith(RunnerExtension.class)
 public abstract class TestRunner {
     private static String BASE_URL = "https://www.greencity.social/";
     protected static WebDriver driver;
@@ -34,6 +34,7 @@ public abstract class TestRunner {
     protected static SignInElements signInElements;
     protected static ForgotPasswordElements forgotPasswordElements;
     protected static LocalStorageJS localStorageJS;
+    protected static Boolean isTestSuccessful = false;
 
     @BeforeAll
     public static void setUp() {
@@ -52,18 +53,35 @@ public abstract class TestRunner {
 
         webDriverWait = new WebDriverWait(driver, Duration.ofMillis(5000L));
         wait = new FluentWait<>(driver).withTimeout(Duration.ofSeconds(10)).pollingEvery(Duration.ofMillis(500));
-        guestFunctions = new GuestFunctions(driver, webDriverWait, wait);
         signInElements = new SignInElements(driver);
         forgotPasswordElements = new ForgotPasswordElements(driver);
+        guestFunctions = new GuestFunctions(driver, webDriverWait, wait);
     }
 
     @AfterEach
-    public void closePage() {
+    public void tearThis(TestInfo testInfo) {
+        if (!isTestSuccessful) {
+            log.error(testInfo.getDisplayName() + "fail");
+            System.out.println(testInfo.getTestMethod() + " with test data " + testInfo.getDisplayName() + " failed");
+
+        } else {
+            log.info("Test" + testInfo.getTestMethod() + " finished successful " + isTestSuccessful);
+            System.out.println("Test" + testInfo.getTestMethod() + " finished successful " + isTestSuccessful);
+        }
+        closeLoginForm();
         driver.manage().deleteAllCookies();
         localStorageJS.removeItemFromLocalStorage("accessToken");
         localStorageJS.removeItemFromLocalStorage("refreshToken");
 
     }
+
+    public void closeLoginForm() {
+        List<WebElement> closeButtonLoginForm = signInElements.listCloseButton;
+        if(!closeButtonLoginForm.isEmpty()) {
+            closeButtonLoginForm.get(0).click();
+        }
+    }
+
     @AfterAll
     public static void tearDown() {
         driver.quit();

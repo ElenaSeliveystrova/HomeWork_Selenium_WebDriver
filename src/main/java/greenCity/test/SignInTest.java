@@ -54,7 +54,6 @@ public class SignInTest extends TestRunner {
         guestFunctions.fillUserData(email, "uT346^^^erw");
         webDriverWait.until(ExpectedConditions.visibilityOf(signInElements.errorEmail));
         assertThat(signInElements.errorEmail.getText(), is("Please check if the email is written correctly"));
-        signInElements.closeButton.click();
     }
 
     @ParameterizedTest
@@ -71,8 +70,6 @@ public class SignInTest extends TestRunner {
             signInElements.passwordLabel.click();
             assertThat(signInElements.errorPassword.getText(), is(message));
         }
-        signInElements.closeButton.click();
-
     }
 
     @Test
@@ -84,7 +81,6 @@ public class SignInTest extends TestRunner {
         webDriverWait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("h1.title-text")));
         assertThat(signInElements.helloText.getText(), is("Hello!"));
         assertThat(signInElements.signUpDetailsText.getText(), is("Please enter your details to sign up."));
-        signInElements.closeButton.click();
     }
 
     private static Stream<Arguments> userDataProvider() {

@@ -6,6 +6,8 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 
+import java.util.List;
+
 @Getter
 public class SignInElements {
     @FindBy(css = ".ng-star-inserted > h1")
@@ -14,6 +16,9 @@ public class SignInElements {
     public WebElement signInDetailsText;
     @FindBy(css = "label[for=\"email\"]")
     public WebElement emailLabel;
+    @FindBy(css = "app-ubs .ubs-header-sing-in-img")
+//    @FindBy(css = "img.ubs-header-sing-in-img")
+    public WebElement signInButton;
     @FindBy(css = ".ubsStyle")
     public WebElement signInSubmitButton;
     @FindBy(xpath = "//*[@id=\"header_user-wrp\"]/ul/li[@aria-label=\"sign-out\"] [@class=\"drop-down-item\"]")
@@ -28,6 +33,8 @@ public class SignInElements {
     public WebElement headerUserButton;
     @FindBy(css = "a.close-modal-window")
     public WebElement closeButton;
+    @FindBy(css = "a.close-modal-window")
+    public List<WebElement> listCloseButton;
     @FindBy(xpath = "//app-auth-modal/div/div/div[2]/div/app-sign-in/form/label[2]")
     public WebElement passwordLabel;
     @FindBy(css = "div.alert-general-error.ng-star-inserted")
