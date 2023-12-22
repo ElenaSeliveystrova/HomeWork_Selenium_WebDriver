@@ -3,6 +3,7 @@ package greenCity.library;
 import greenCity.locators.ForgotPasswordElements;
 import greenCity.locators.SignInElements;
 import greenCity.test.TestRunner;
+import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -15,6 +16,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+@Slf4j
 public class GuestFunctions {
     private WebDriver driver;
     private WebDriverWait webDriverWait;
@@ -33,13 +35,17 @@ public class GuestFunctions {
 
     public void fillUserData(String email, String password) {
         forgotPasswordElements.getEmailInput().sendKeys(email);
+        log.info("Fill user email {}", email);
         forgotPasswordElements.getPasswordInput().sendKeys(password);
+        log.info("Fill user password {}", password);
+
     }
 
     public void clickSignInButton() {
         webDriverWait.until(ExpectedConditions.elementToBeClickable(signInElements.signInButton));
         signInElements.signInButton.click();
         wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.cssSelector("div.wrapper")));
+        log.info("SignIn window was opened.");
     }
 
     public void fillForgotPasswordForm(String email) {
@@ -47,6 +53,7 @@ public class GuestFunctions {
         forgotPasswordElements.getForgotPasswordButton().click();
         forgotPasswordElements.getEmailInput().sendKeys(email);
         forgotPasswordElements.getSubmitLoginLinkButton().click();
+        log.info("Fill ForgotPasswordForm {}", email);
     }
 
     public void checkMessageFromForgotPasswordForm(String email, WebElement element, String errorMessage) {

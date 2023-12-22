@@ -41,8 +41,8 @@ public class ForgotPasswordTest extends TestRunner {
 
     private static Stream<String> emailProvider() {
         return Stream.of(
-//                "magicnimfa@gmail.com",
-                "testerforapp2023@gmail.com"
+                "magicnimfa@gmail.com"
+//                "testerforapp2023@gmail.com"
 //                "cowafo7557@bustayes.com",
 //                "xapajoy635@frandin.com"
 

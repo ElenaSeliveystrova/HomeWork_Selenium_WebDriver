@@ -1,8 +1,9 @@
 package greenCity.tools;
 
+import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
-
+@Slf4j
 public class LocalStorageJS {
     private JavascriptExecutor js;
 
@@ -18,5 +19,6 @@ public class LocalStorageJS {
     }
     public void clickRedirectSignUpButton() {
         js.executeScript("document.querySelector('a.ubs-link').click()");
+        log.info("Click on SignUp button");
     }
 }

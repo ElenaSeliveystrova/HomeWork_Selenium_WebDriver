@@ -9,7 +9,9 @@ public class RunnerExtension implements AfterTestExecutionCallback {
     @Override
     public void afterTestExecution(ExtensionContext context) throws Exception {
         Boolean testResult = context.getExecutionException().isPresent();
-        log.error(context.getExecutionException() + "Exception is present");
+        if(testResult) {
+            log.error(context.getExecutionException() + " Exception is present");
+        }
         TestRunner.isTestSuccessful = !testResult;
     }
 }

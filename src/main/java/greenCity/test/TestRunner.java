@@ -6,18 +6,21 @@ import greenCity.locators.SignInElements;
 import greenCity.tools.LocalStorageJS;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.openqa.selenium.Dimension;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.Wait;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -40,7 +43,6 @@ public abstract class TestRunner {
     public static void setUp() {
         WebDriverManager.chromedriver().setup();
         driver = new ChromeDriver();
-
         driver.get(BASE_URL);
         driver.manage().window().setSize(new Dimension(1264, 798));
 //        driver.manage().window().maximize();
@@ -50,7 +52,6 @@ public abstract class TestRunner {
     @BeforeEach
     public void initPageElements() {
         PageFactory.initElements(driver, this);
-
         webDriverWait = new WebDriverWait(driver, Duration.ofMillis(5000L));
         wait = new FluentWait<>(driver).withTimeout(Duration.ofSeconds(10)).pollingEvery(Duration.ofMillis(500));
         signInElements = new SignInElements(driver);
@@ -60,25 +61,20 @@ public abstract class TestRunner {
 
     @AfterEach
     public void tearThis(TestInfo testInfo) {
-        if (!isTestSuccessful) {
-            log.error(testInfo.getDisplayName() + "fail");
-            System.out.println(testInfo.getTestMethod() + " with test data " + testInfo.getDisplayName() + " failed");
+        try {
+            if (!isTestSuccessful) {
+                takeScreenShot();
+            log.error(testInfo.getTestMethod() + " with test data " + testInfo.getDisplayName() + " failed");
 
-        } else {
+            } else {
             log.info("Test" + testInfo.getTestMethod() + " finished successful " + isTestSuccessful);
-            System.out.println("Test" + testInfo.getTestMethod() + " finished successful " + isTestSuccessful);
-        }
-        closeLoginForm();
-        driver.manage().deleteAllCookies();
-        localStorageJS.removeItemFromLocalStorage("accessToken");
-        localStorageJS.removeItemFromLocalStorage("refreshToken");
-
-    }
-
-    public void closeLoginForm() {
-        List<WebElement> closeButtonLoginForm = signInElements.listCloseButton;
-        if(!closeButtonLoginForm.isEmpty()) {
-            closeButtonLoginForm.get(0).click();
+            }
+            closeLoginForm();
+            driver.manage().deleteAllCookies();
+            localStorageJS.removeItemFromLocalStorage("accessToken");
+            localStorageJS.removeItemFromLocalStorage("refreshToken");
+        } catch (Exception e) {
+            log.error(e.getMessage());
         }
     }
 
@@ -87,4 +83,18 @@ public abstract class TestRunner {
         driver.quit();
     }
 
+    private void takeScreenShot() throws IOException {
+        LocalDateTime currentTime = LocalDateTime.now();
+        File sclFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+        FileUtils.copyFile(sclFile, new File("./screenshot/" + currentTime + "_screenshot.png"));
+        log.info("Screenshot was taken in directory ./screenshot");
+    }
+
+    private void closeLoginForm() {
+        List<WebElement> closeButtonLoginForm = signInElements.listCloseButton;
+        if (!closeButtonLoginForm.isEmpty()) {
+            closeButtonLoginForm.get(0).click();
+            log.info("Login form was closed!");
+        }
+    }
 }

@@ -2,6 +2,8 @@ package greenCity.test;
 
 import greenCity.data.User;
 import greenCity.data.UserRepository;
+import lombok.extern.slf4j.Slf4j;
+import org.bouncycastle.pqc.legacy.crypto.rainbow.Layer;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.*;
@@ -14,11 +16,13 @@ import java.util.stream.Stream;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+@Slf4j
 public class SignInTest extends TestRunner {
 
 
     @Test
     public void verifyTitle() {
+        log.info("Verify title start");
         assertThat(driver.getTitle(), is("GreenCity"));
     }
 
@@ -42,6 +46,7 @@ public class SignInTest extends TestRunner {
         webDriverWait.until(ExpectedConditions.elementToBeClickable(signInElements.headerUser));
         signInElements.headerUser.isSelected();
         signInElements.signOutButton.click();
+        log.info("LogOut executed successful!");
     }
 
     @ParameterizedTest
@@ -63,10 +68,12 @@ public class SignInTest extends TestRunner {
         guestFunctions.fillUserData(user.getEmail(), user.getPassword());
         boolean submitButtonEnabled = signInElements.signInSubmitButton.isEnabled();
         if (submitButtonEnabled) {
+            log.info("Check incorrect user data");
             signInElements.signInSubmitButton.click();
             webDriverWait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("div.alert-general-error.ng-star-inserted")));
             assertThat(signInElements.errorSubmit.getText(), is(message));
         } else {
+            log.info("Check invalid password");
             signInElements.passwordLabel.click();
             assertThat(signInElements.errorPassword.getText(), is(message));
         }
