@@ -35,13 +35,14 @@ public class GuestFunctions {
 
     public void fillUserData(String email, String password) {
         forgotPasswordElements.getEmailInput().sendKeys(email);
-        log.info("Fill user email {}", email);
+        log.debug("Fill user email {}", email);
         forgotPasswordElements.getPasswordInput().sendKeys(password);
-        log.info("Fill user password {}", password);
+        log.debug("Fill user password");
 
     }
 
     public void clickSignInButton() {
+        log.debug("Start clickSignInButton()");
         webDriverWait.until(ExpectedConditions.elementToBeClickable(signInElements.signInButton));
         signInElements.signInButton.click();
         wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.cssSelector("div.wrapper")));

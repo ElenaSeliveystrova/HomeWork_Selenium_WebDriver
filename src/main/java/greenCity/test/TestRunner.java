@@ -80,10 +80,11 @@ public abstract class TestRunner {
 
     @AfterAll
     public static void tearDown() {
-        driver.quit();
+//        driver.quit();
     }
 
     private void takeScreenShot() throws IOException {
+        log.debug("Start takeScreenShot()");
         LocalDateTime currentTime = LocalDateTime.now();
         File sclFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
         FileUtils.copyFile(sclFile, new File("./screenshot/" + currentTime + "_screenshot.png"));
